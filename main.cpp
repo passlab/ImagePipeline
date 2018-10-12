@@ -103,6 +103,14 @@ void findSquares(const cv::Mat inputImage,const void* context)
 }
 
 int main(int argc,char* argv[]) {
+
+    if (argc < 3) {
+        printf("Invalid arguments are given.\n");
+        printf("Usage: ./example OUTER_OMP_THREAD_NUM INNER_OPENCV_THREAD_NUM\n");
+        printf("Such as ./example 4 8\n");
+        return 1;
+    }
+
     double times[8];
     int outer_num = atoi(argv[1]);
     int inner_num = atoi(argv[2]);
