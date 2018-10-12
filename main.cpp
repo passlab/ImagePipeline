@@ -61,12 +61,14 @@ void findSquares(const cv::Mat inputImage,const void* context)
 }
 
 int main(int argc,char* argv[]) {
-    double time[4];
+    double time[8];
     int outer_num = atoi(argv[1]);
+    int inner_num = atoi(argv[2]);
     double total_time = read_timer();
+    setNumThreads(inner_num);
     // parallel
 #pragma omp parallel for num_threads(outer_num)
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 8; i++) {
         double times = read_timer();
         ImageGraph graph;
         graph.addNode(downscaleImageBy2);
