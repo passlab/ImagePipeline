@@ -61,15 +61,17 @@ void findSquares(const cv::Mat inputImage,const void* context)
 }
 
 int main(int argc,char* argv[]) {
-    double time[8];
+    double times[8];
     int outer_num = atoi(argv[1]);
     int inner_num = atoi(argv[2]);
     double total_time = read_timer();
-    setNumThreads(inner_num);
+    if (inner_num > 0) {
+        setNumThreads(inner_num);
+    }
     // parallel
 #pragma omp parallel for num_threads(outer_num)
     for (int i = 0; i < 8; i++) {
-        double times = read_timer();
+        double time = read_timer();
         ImageGraph graph;
         graph.addNode(downscaleImageBy2);
         graph.addNode(upscaleImageBy2);
@@ -81,7 +83,6 @@ int main(int argc,char* argv[]) {
         ImagePipeline pipeline(graph);
         std::string filename = "test" + std::to_string(i) + ".jpg";
         cout << filename << "\n";
-        //inputImage = imread("maple.jpg");
         Mat inputImage = imread(filename);
 
         printf("New outer thread %d.\n", omp_get_thread_num());
@@ -94,9 +95,9 @@ int main(int argc,char* argv[]) {
         }
         filename = "res_" + filename;
         imwrite(filename, inputImage);
-        times = read_timer() - times;
-        printf("Iteration %d -- Thread %d -- Time: %f\n", i, omp_get_thread_num(), times);
-        time[i] = times;
+        time = read_timer() - time;
+        printf("Iteration %d -- Thread %d -- Time: %f\n", i, omp_get_thread_num(), time);
+        times[i] = time;
     }
 
     total_time = read_timer() - total_time;
