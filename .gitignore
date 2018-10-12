@@ -2,4 +2,5 @@
 *.mobileprovision
 *.trace
 *.o
+res_*.jpg
 example
