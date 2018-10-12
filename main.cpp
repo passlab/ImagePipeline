@@ -25,6 +25,48 @@ using namespace std;
 
 #define ANGLE(p1,p2,p3) (((p1.x-p3.x)*(p2.x-p3.x))+((p1.y-p3.y)*(p2.y-p3.y)))/sqrt(((pow(p1.x-p3.x,2.0)+pow(p1.y-p3.y,2.0))*(pow(p2.x-p3.x,2.0)+pow(p2.y-p3.y,2.0)))+1e-10)
 
+// ---------------------------
+
+// Define a pixel
+typedef Point3_<uint8_t> Pixel;
+
+// A complicated threshold is defined so
+// a non-trivial amount of computation
+// is done at each pixel.
+void complicatedThreshold(Pixel &pixel)
+{
+  if (pow(double(pixel.x)/10,2.5) > 100)
+  {
+    pixel.x = 255;
+    pixel.y = 255;
+    pixel.z = 255;
+  }
+  else
+  {
+    pixel.x = 0;
+    pixel.y = 0;
+    pixel.z = 0;
+  }
+}
+
+// Parallel execution with function object.
+struct Operator
+{
+  void operator ()(Pixel &pixel, const int * position) const
+  {
+    // Perform a simple threshold operation
+    complicatedThreshold(pixel);
+  }
+};
+
+int processImage(Mat* image) {
+    image->forEach<Pixel>(Operator());
+    return 1;
+}
+
+
+// ---------------------
+
 double read_timer_ms() {
     struct timeval t;
     gettimeofday(&t, 0);
@@ -72,7 +114,7 @@ int main(int argc,char* argv[]) {
     // parallel
 #pragma omp parallel for num_threads(outer_num)
     for (int i = 0; i < 8; i++) {
-        double time = read_timer();
+        /*
         ImageGraph graph;
         graph.addNode(downscaleImageBy2);
         graph.addNode(upscaleImageBy2);
@@ -82,11 +124,15 @@ int main(int argc,char* argv[]) {
 
         vector<vector<Point> > contextVector;
         ImagePipeline pipeline(graph);
+        */
         std::string filename = "test" + std::to_string(i) + ".jpg";
         cout << filename << "\n";
+        printf("New outer thread %d.\n", omp_get_thread_num());
         Mat inputImage = imread(filename);
 
-        printf("New outer thread %d.\n", omp_get_thread_num());
+        double time = read_timer();
+        int res = processImage(&inputImage);
+        /*
         pipeline.feed(inputImage,&contextVector);
         
         for(int j=0;j<contextVector.size();j++) {
@@ -94,9 +140,10 @@ int main(int argc,char* argv[]) {
             int n = (int)contextVector[j].size();
             polylines(inputImage,&p,&n,1,true,Scalar(0,255,0),3,CV_AA);
         }
+        */
+        time = read_timer() - time;
         filename = "res_" + filename;
         imwrite(filename, inputImage);
-        time = read_timer() - time;
         printf("Iteration %d -- Thread %d -- Time: %f\n", i, omp_get_thread_num(), time);
         times[i] = time;
     }
