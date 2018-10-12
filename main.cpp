@@ -65,6 +65,7 @@ int main(int argc,char* argv[]) {
     int outer_num = atoi(argv[1]);
     int inner_num = atoi(argv[2]);
     double total_time = read_timer();
+    double average_time;
     if (inner_num > 0) {
         setNumThreads(inner_num);
     }
@@ -100,9 +101,14 @@ int main(int argc,char* argv[]) {
         times[i] = time;
     }
 
+    for (int i = 0; i < 8; i++) {
+        average_time += times[i];
+    }
+    average_time /= 8;
+
     total_time = read_timer() - total_time;
 
-    printf("The total time is: %f\n", total_time);
+    printf("The total time is: %.2f\n The average time is %.2f\n", total_time, average_time);
 
 	return EXIT_SUCCESS;
 }
