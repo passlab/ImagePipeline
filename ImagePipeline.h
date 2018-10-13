@@ -26,8 +26,9 @@ namespace IP
 	typedef void (*analysisFunc)(const cv::Mat,const void*);
 	typedef std::vector<cv::Mat> (*preprocessingSplitFunc)(const cv::Mat,const void*);
 	
-	cv::Mat downscaleImageBy2(const cv::Mat inputImage,const void* context);
-	cv::Mat upscaleImageBy2(const cv::Mat inputImage,const void* context);
+	cv::Mat downscaleImage(const cv::Mat inputImage,const void* context);
+	cv::Mat denoiseImage(const cv::Mat inputImage,const void* context);
+	cv::Mat smoothImage(const cv::Mat inputImage,const void* context);
 	std::vector<cv::Mat> splitChannels(const cv::Mat inputImage,const void* context);
 	std::vector<cv::Mat> split11Thresholds(const cv::Mat inputImage,const void* context);
 	

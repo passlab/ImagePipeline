@@ -18,18 +18,21 @@
 
 namespace IP
 {
-	cv::Mat downscaleImageBy2(const cv::Mat inputImage,const void* context)
-	{
-		cv::Mat outputImage(cv::Size(inputImage.size().width/2,inputImage.size().height/2),inputImage.type());
-		cv::pyrDown(inputImage,outputImage,outputImage.size());
+	cv::Mat downscaleImage(const cv::Mat inputImage,const void* context) {
+        cv::Mat outputImage;
+        cv::resize(inputImage, outputImage, cv::Size(0, 0), 0.2, 0.2, CV_INTER_AREA);
 		return outputImage;
 	}
 	
-	cv::Mat upscaleImageBy2(const cv::Mat inputImage,const void* context)
-	{
-		cv::Mat outputImage(cv::Size(inputImage.size().width*2,inputImage.size().height*2),inputImage.type());
-		cv::pyrUp(inputImage,outputImage,outputImage.size());
-		return outputImage;
+	cv::Mat denoiseImage(const cv::Mat inputImage,const void* context) {
+        cv::Mat outputImage;
+        cv::fastNlMeansDenoising(inputImage, outputImage, 3, 7, 21);
+        return outputImage;
+	}
+	cv::Mat smoothImage(const cv::Mat inputImage,const void* context) {
+        cv::Mat outputImage;
+        cv::GaussianBlur(inputImage, outputImage, cv::Size(5, 5), 0, 0);
+        return outputImage;
 	}
 	
 	std::vector<cv::Mat> splitChannels(const cv::Mat inputImage,const void* context)
