@@ -53,7 +53,7 @@ void processImage(int iteration_id, const cv::Mat inputImage) {
 
     //filename = "res_" + filename;
     //imwrite(filename, inputImage);
-    printf("Iteration %d -- Thread %d -- Time: %.3f\n", iteration_id, omp_get_thread_num(), time);
+    printf("Iteration %d -- Thread %d -- Time: %.2f\n", iteration_id, omp_get_thread_num(), time);
     times[iteration_id] = time;
 
 }

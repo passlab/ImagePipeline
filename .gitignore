@@ -3,4 +3,4 @@
 *.trace
 *.o
 res_*.jpg
-example
+main
