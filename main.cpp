@@ -29,10 +29,10 @@ double read_timer();
 double read_timer_ms();
 double times[1024];
 void findSquares(const cv::Mat, const void*);
-void processImage(int, int);
+void processImage(int, const cv::Mat);
 
-void processImage(int threadID, int thread_num) {
-    cv::setNumThreads(thread_num);
+void processImage(int iteration_id, const cv::Mat inputImage) {
+    //cv::setNumThreads(thread_num);
     ImageGraph graph;
     graph.addNode(downscaleImage); // resize, parallel_for
     graph.addNode(denoiseImage); // denoise, parallel_for
@@ -42,19 +42,19 @@ void processImage(int threadID, int thread_num) {
     vector<vector<Point> > contextVector;
     ImagePipeline pipeline(graph);
 
-    std::string filename = "test" + std::to_string(threadID%8) + ".jpg";
-    cout << filename << "\n";
-    printf("New outer thread %d.\n", omp_get_thread_num());
-    Mat inputImage = imread(filename);
+    //std::string filename = "test" + std::to_string(iteration_id%8) + ".jpg";
+    //cout << filename << "\n";
+    //printf("New outer thread %d.\n", omp_get_thread_num());
+    //Mat inputImage = imread(filename);
 
     double time = read_timer();
     pipeline.feed(inputImage,&contextVector);
     time = read_timer() - time;
 
-    filename = "res_" + filename;
-    imwrite(filename, inputImage);
-    printf("Iteration %d -- Thread %d -- Time: %.3f\n", threadID, omp_get_thread_num(), time);
-    times[threadID] = time;
+    //filename = "res_" + filename;
+    //imwrite(filename, inputImage);
+    printf("Iteration %d -- Thread %d -- Time: %.3f\n", iteration_id, omp_get_thread_num(), time);
+    times[iteration_id] = time;
 
 }
 
@@ -106,16 +106,20 @@ int main(int argc,char* argv[]) {
 
     int outer_num = atoi(argv[1]);
     int inner_num = atoi(argv[2]);
+    if (inner_num > 0 ) {
+        cv::setNumThreads(inner_num);
+    }
     int loops = 8;
     if (argc > 3) {
         loops = atoi(argv[3]);
     }
     double total_time = read_timer();
     double average_time;
+    cv::Mat input_image = cv::imread("test0.jpg");
     // parallel
-#pragma omp parallel for num_threads(outer_num) firstprivate(inner_num, loops)
+#pragma omp parallel for num_threads(outer_num) firstprivate(input_image, loops)
     for (int i = 0; i < loops; i++) {
-        processImage(i, inner_num);
+        processImage(i, input_image);
     }
 
     for (int i = 0; i < loops; i++) {
