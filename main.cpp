@@ -27,11 +27,12 @@ using namespace std;
 
 double read_timer();
 double read_timer_ms();
-double times[8];
+double times[1024];
 void findSquares(const cv::Mat, const void*);
-void processImage(int);
+void processImage(int, int);
 
-void processImage(int threadID) {
+void processImage(int threadID, int thread_num) {
+    cv::setNumThreads(thread_num);
     ImageGraph graph;
     graph.addNode(downscaleImage); // resize, parallel_for
     graph.addNode(denoiseImage); // denoise, parallel_for
@@ -41,7 +42,7 @@ void processImage(int threadID) {
     vector<vector<Point> > contextVector;
     ImagePipeline pipeline(graph);
 
-    std::string filename = "test" + std::to_string(threadID) + ".jpg";
+    std::string filename = "test" + std::to_string(threadID%8) + ".jpg";
     cout << filename << "\n";
     printf("New outer thread %d.\n", omp_get_thread_num());
     Mat inputImage = imread(filename);
@@ -105,25 +106,26 @@ int main(int argc,char* argv[]) {
 
     int outer_num = atoi(argv[1]);
     int inner_num = atoi(argv[2]);
+    int loops = 8;
+    if (argc > 3) {
+        loops = atoi(argv[3]);
+    }
     double total_time = read_timer();
     double average_time;
-    if (inner_num > 0) {
-        setNumThreads(inner_num);
-    }
     // parallel
-#pragma omp parallel for num_threads(outer_num)
-    for (int i = 0; i < 8; i++) {
-        processImage(i);
+#pragma omp parallel for num_threads(outer_num) firstprivate(inner_num, loops)
+    for (int i = 0; i < loops; i++) {
+        processImage(i, inner_num);
     }
 
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < loops; i++) {
         average_time += times[i];
     }
-    average_time /= 8;
+    average_time /= loops;
 
     total_time = read_timer() - total_time;
 
-    printf("The total time is: %.3f\nThe average time is %.3f\n", total_time, average_time);
+    printf("The total time is: %.2f\nThe average time is %.2f\n", total_time, average_time);
 
 	return EXIT_SUCCESS;
 }
