@@ -24,45 +24,38 @@ using namespace cv;
 using namespace std;
 
 #define ANGLE(p1,p2,p3) (((p1.x-p3.x)*(p2.x-p3.x))+((p1.y-p3.y)*(p2.y-p3.y)))/sqrt(((pow(p1.x-p3.x,2.0)+pow(p1.y-p3.y,2.0))*(pow(p2.x-p3.x,2.0)+pow(p2.y-p3.y,2.0)))+1e-10)
-/*
-// ---------------------------
 
-// Define a pixel
-typedef Point3_<uint8_t> Pixel;
+double read_timer();
+double read_timer_ms();
+double times[8];
+void findSquares(const cv::Mat, const void*);
+void processImage(int);
 
-// A complicated threshold is defined so
-// a non-trivial amount of computation
-// is done at each pixel.
-void complicatedThreshold(Pixel &pixel)
-{
-  if (pow(double(pixel.x)/10,2.5) > 100)
-  {
-    pixel.x = 255;
-    pixel.y = 255;
-    pixel.z = 255;
-  }
-  else
-  {
-    pixel.x = 0;
-    pixel.y = 0;
-    pixel.z = 0;
-  }
+void processImage(int threadID) {
+    ImageGraph graph;
+    graph.addNode(downscaleImage); // resize, parallel_for
+    graph.addNode(denoiseImage); // denoise, parallel_for
+    graph.addNode(smoothImage); // smooth, parallel_for
+    graph.addNode(findSquares);
+
+    vector<vector<Point> > contextVector;
+    ImagePipeline pipeline(graph);
+
+    std::string filename = "test" + std::to_string(threadID) + ".jpg";
+    cout << filename << "\n";
+    printf("New outer thread %d.\n", omp_get_thread_num());
+    Mat inputImage = imread(filename);
+
+    double time = read_timer();
+    pipeline.feed(inputImage,&contextVector);
+    time = read_timer() - time;
+
+    filename = "res_" + filename;
+    imwrite(filename, inputImage);
+    printf("Iteration %d -- Thread %d -- Time: %.3f\n", threadID, omp_get_thread_num(), time);
+    times[threadID] = time;
+
 }
-
-// Parallel execution with function object.
-struct Operator
-{
-  void operator ()(Pixel &pixel, const int * position) const
-  {
-    // Perform a simple threshold operation
-    complicatedThreshold(pixel);
-  }
-};
-
-void processImage(const cv::Mat inputImage) {
-    inputImage.forEach<Pixel>(Operator());
-}
-*/
 
 // ---------------------
 
@@ -76,7 +69,7 @@ double read_timer() {
     return read_timer_ms() * 1.0e-3;
 }
 
-void findSquares(const cv::Mat inputImage,const void* context)
+void findSquares(const cv::Mat inputImage, const void* context)
 {
 	if(context == NULL || inputImage.type() != CV_8U)
 		return;
@@ -110,7 +103,6 @@ int main(int argc,char* argv[]) {
         return 1;
     }
 
-    double times[8];
     int outer_num = atoi(argv[1]);
     int inner_num = atoi(argv[2]);
     double total_time = read_timer();
@@ -121,39 +113,7 @@ int main(int argc,char* argv[]) {
     // parallel
 #pragma omp parallel for num_threads(outer_num)
     for (int i = 0; i < 8; i++) {
-        
-        ImageGraph graph;
-        graph.addNode(downscaleImage); // resize, parallel_for
-        graph.addNode(denoiseImage); // denoise, parallel_for
-        graph.addNode(smoothImage); // smooth, parallel_for
-        //graph.addNode(splitChannels);
-        //graph.addNode(split11Thresholds);
-        graph.addNode(findSquares);
-
-        vector<vector<Point> > contextVector;
-        ImagePipeline pipeline(graph);
-       
-        std::string filename = "test" + std::to_string(i) + ".jpg";
-        cout << filename << "\n";
-        printf("New outer thread %d.\n", omp_get_thread_num());
-        Mat inputImage = imread(filename);
-
-        double time = read_timer();
-        //processImage(&inputImage);
-        
-        pipeline.feed(inputImage,&contextVector);
-        /*
-        for(int j=0;j<contextVector.size();j++) {
-            const Point* p = &contextVector[j][0];
-            int n = (int)contextVector[j].size();
-            polylines(inputImage,&p,&n,1,true,Scalar(0,255,0),3,CV_AA);
-        }
-        */
-        time = read_timer() - time;
-        filename = "res_" + filename;
-        imwrite(filename, inputImage);
-        printf("Iteration %d -- Thread %d -- Time: %f\n", i, omp_get_thread_num(), time);
-        times[i] = time;
+        processImage(i);
     }
 
     for (int i = 0; i < 8; i++) {
@@ -163,7 +123,7 @@ int main(int argc,char* argv[]) {
 
     total_time = read_timer() - total_time;
 
-    printf("The total time is: %.2f\nThe average time is %.2f\n", total_time, average_time);
+    printf("The total time is: %.3f\nThe average time is %.3f\n", total_time, average_time);
 
 	return EXIT_SUCCESS;
 }
