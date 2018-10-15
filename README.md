@@ -1,3 +1,34 @@
+
+## To compile and run
+To use customized installed OpenCV library, set OpenCV_ROOT cmake variable so it will find the one you need. 
+
+```
+mkdir build
+
+cd build
+
+cmake -DOpenCV_ROOT=opencv_install_folder ..
+
+make
+
+```
+
+## To compile OpenCV on carina
+We turned off CUDA support because there are some errors with related to CUDA_nppi lib
+```
+cmake -DCMAKE_INSTALL_PREFIX=/opt/opencv-2.4.13.6-openmp-install -DWITH_OPENMP=ON -DWITH_CUDA=OFF ..
+```
+
+```
+cmake -DCMAKE_INSTALL_PREFIX=/opt/opencv-2.4.13.6-tbb-install -DWITH_TBB=ON -DWITH_CUDA=OFF ..
+```
+
+Then on carina, the build of ImagePipeline has to use the build folder of opencv-2.4.13.6, not the install folder and it has to use OpenCV_DIR cmake variable
+
+```
+cmake -DOpenCV_DIR=/home/yanyh/opencv-2.4.13.6/build-openmp ..
+```
+
 ImagePipeline 1.0
 ==============
 
