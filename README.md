@@ -26,7 +26,7 @@ cmake -DCMAKE_INSTALL_PREFIX=/opt/opencv-2.4.13.6-tbb-install -DWITH_TBB=ON -DWI
 Then on carina, the build of ImagePipeline has to use the build folder of opencv-2.4.13.6, not the install folder and it has to use OpenCV_DIR cmake variable
 
 ```
-cmake -DOpenCV_DIR=/home/yanyh/opencv-2.4.13.6/build ..
+cmake -DOpenCV_DIR=/home/yanyh/opencv-2.4.13.6/build-openmp ..
 ```
 
 ImagePipeline 1.0
