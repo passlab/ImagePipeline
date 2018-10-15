@@ -28,8 +28,8 @@ function main(ARGS::Array{String,1})
                     ccall((:processImage, "libImagePipeline"), Cvoid, (Int32, Cstring, Int32), i, image, inner_num)
                  end
     t2 = time_ns()
-    elasped = (t2 - t1)/1.0e9
-    @printf "Elapsed time: %fn" elapsed
+    elapsed = (t2 - t1)/1.0e9
+    @printf "Elapsed time: %.2fs\n" elapsed
 
 end
 
