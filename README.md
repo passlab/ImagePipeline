@@ -1,3 +1,11 @@
+
+# To compile and run
+mkdir build
+cd build
+cmake ..
+make
+
+
 ImagePipeline 1.0
 ==============
 
