@@ -1,13 +1,13 @@
 
 # To compile and run
-To use customized installed OpenCV library, set OpenCV_ROOT_DIR cmake variable so it will find the one you need. 
+To use customized installed OpenCV library, set OpenCV_ROOT cmake variable so it will find the one you need. 
 
 ```
 mkdir build
 
 cd build
 
-cmake -DOpenCV_ROOT_DIR=opencv_install_folder ..
+cmake -DOpenCV_ROOT=opencv_install_folder ..
 
 make
 
