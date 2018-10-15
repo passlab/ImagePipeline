@@ -1,10 +1,13 @@
 
 # To compile and run
+To use customized installed OpenCV library, set OpenCV_ROOT_DIR cmake variable so it will find the one you need. 
+
+``
 mkdir build
 cd build
-cmake ..
+cmake -DOpenCV_ROOT_DIR=opencv_install_folder ..
 make
-
+``
 
 ImagePipeline 1.0
 ==============
