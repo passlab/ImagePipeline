@@ -24,7 +24,7 @@ int main(int argc,char* argv[]) {
 
     if (argc < 3) {
         printf("Invalid arguments are given.\n");
-        printf("Usage: ./example OUTER_OMP_THREAD_NUM INNER_OPENCV_THREAD_NUM\n");
+        printf("Usage: ./example OUTER_OMP_THREAD_NUM INNER_OPENCV_THREAD_NUM NUM_IMAGES [0|1] FOR AUTO_CONFIG\n");
         printf("Such as ./example 4 8\n");
         return 1;
     }
@@ -32,7 +32,7 @@ int main(int argc,char* argv[]) {
     int outer_num = atoi(argv[1]);
     int inner_num = atoi(argv[2]);
     int auto_config = 1;
-    int num_images;
+    int num_images = 8;
     if (argc > 3) {
         num_images = atoi(argv[3]);
         auto_config = atoi(argv[4]);
