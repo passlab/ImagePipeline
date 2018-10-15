@@ -10,7 +10,7 @@ function main(out_num::Int32, inner_num::Int32)
 
     Threads.@threads for i = 1:loop
                     # Threads.threadid()
-                     ccall((:processImage, "libImagePipeline"), Cvoid, (Int32, Cstring), i, image)
+                     ccall((:processImage, "libImagePipeline"), Cvoid, (Int32, Cstring, Int32), i, image, inner_num)
                  end
 
 end

@@ -8,7 +8,7 @@
 extern double read_timer();
 extern double read_timer_ms();
 extern double times[];
-extern void processImage(int, char * image);
+extern void processImage(int, char * image, int num_threads);
 extern void setCVNumThreads(int num_threads);
 
 #endif //IMAGEPIPELINE_IMAGEPIPELINEDRIVER_H

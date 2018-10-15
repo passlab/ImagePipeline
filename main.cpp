@@ -43,7 +43,7 @@ int main(int argc,char* argv[]) {
     // parallel
 #pragma omp parallel for num_threads(outer_num) firstprivate(image, loops)
     for (int i = 0; i < loops; i++) {
-        processImage(i, image);
+        processImage(i, image, inner_num);
     }
 
     for (int i = 0; i < loops; i++) {

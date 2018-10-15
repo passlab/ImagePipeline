@@ -31,9 +31,10 @@ double times[1024];
 void findSquares(const cv::Mat, const void*);
 void processImage(int, char * image);
 
-void processImage(int iteration_id, char * image ) {
+void processImage(int iteration_id, char * image, int num_threads) {
     //cv::setNumThreads(thread_num);
     cout << "load cv images\n";
+    cv::setNumThreads(num_threads);/* this is per-thread function call */
     cv::Mat inputImage = cv::imread(image);
     ImageGraph graph;
     graph.addNode(downscaleImage); // resize, parallel_for
@@ -57,7 +58,6 @@ void processImage(int iteration_id, char * image ) {
     //imwrite(filename, inputImage);
     printf("Iteration %d -- Thread %d -- Time: %.2f\n", iteration_id, omp_get_thread_num(), time);
     times[iteration_id] = time;
-
 }
 
 // ---------------------
