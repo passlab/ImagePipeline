@@ -31,9 +31,11 @@ int main(int argc,char* argv[]) {
 
     int outer_num = atoi(argv[1]);
     int inner_num = atoi(argv[2]);
+    int auto_config = 1;
     int num_images;
     if (argc > 3) {
         num_images = atoi(argv[3]);
+        auto_config = atoi(argv[4]);
     }
     double average_time;
     char * image = "test0.jpg";
@@ -42,33 +44,42 @@ int main(int argc,char* argv[]) {
     int left_over = num_images;
     int loop = 0;
     double total_time = read_timer();
-    if (max_threads < num_images) {
-        left_over = num_images % max_threads;
-        loop = num_images-left_over;
-#pragma omp parallel for num_threads(max_threads) firstprivate(image, loop)
-        for (int i = 0; i < loop; i++) {
-            processImage(i, image, 1);
-        }
-    }
 
-    int num_inner_threads = max_threads / left_over;
-    int temp = max_threads % left_over;
+    if (auto_config) {
+        if (max_threads < num_images) {
+            left_over = num_images % max_threads;
+            loop = num_images - left_over;
+#pragma omp parallel for num_threads(max_threads) firstprivate(image, loop)
+            for (int i = 0; i < loop; i++) {
+                processImage(i, image, 1);
+            }
+        }
+
+        int num_inner_threads = max_threads / left_over;
+        int temp = max_threads % left_over;
 #pragma omp parallel num_threads(left_over) firstprivate(num_inner_threads)
-    {
-       int thread_id = omp_get_thread_num();
-       if (thread_id < temp) num_inner_threads++;
-           processImage(thread_id+loop, image, num_inner_threads);
+        {
+            int thread_id = omp_get_thread_num();
+            if (thread_id < temp) num_inner_threads++;
+            processImage(thread_id + loop, image, num_inner_threads);
+        }
+        printf("auto-config outer and inner parallelism\n");
+        printf("%d images are processed with 1 inner threads\n", loop);
+        printf("%d images are processed with %d or %d inner threads\n", left_over, num_inner_threads, num_inner_threads+1);
+    } else {
+#pragma omp parallel for num_threads(outer_num)
+        for (int i = 0; i < num_images; i++) {
+            processImage(i, image, inner_num);
+        }
+        printf("Manual set outer and inner parallelism: %d outer threads %d inner threads\n", outer_num, inner_num);
     }
     total_time = read_timer() - total_time;
 
-    for (int i = 0; i < loop; i++) {
+    for (int i = 0; i < num_images; i++) {
         average_time += times[i];
     }
-    average_time /= loop;
+    average_time /= num_images;
 
-
-    printf("%d images are processed with 1 inner threads\n", loop);
-    printf("%d images are processed with %d or %d inner threads\n", num_inner_threads, num_inner_threads+1);
     printf("Elapsed time: %.2fs\n", total_time);
     printf("Average time: %.2fs\n", average_time);
 
