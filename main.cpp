@@ -34,21 +34,21 @@ int main(int argc,char* argv[]) {
     if (argc > 3) {
         loops = atoi(argv[3]);
     }
-    double total_time = read_timer();
     double average_time;
     char * image = "test0.jpg";
     // parallel
+    double total_time = read_timer();
 #pragma omp parallel for num_threads(outer_num) firstprivate(image, loops)
     for (int i = 0; i < loops; i++) {
         processImage(i, image, inner_num);
     }
+    total_time = read_timer() - total_time;
 
     for (int i = 0; i < loops; i++) {
         average_time += times[i];
     }
     average_time /= loops;
 
-    total_time = read_timer() - total_time;
 
     printf("The total time is: %.2f\nThe average time is %.2f\n", total_time, average_time);
 

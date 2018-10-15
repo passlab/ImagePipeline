@@ -22,10 +22,15 @@ function main(ARGS::Array{String,1})
 
     image = "test0.jpg"
 
+    t1 = time_ns()
     Threads.@threads for i = 1:loop_count
 #                    @printf "Thread %d for %d\n" Threads.threadid() i
                     ccall((:processImage, "libImagePipeline"), Cvoid, (Int32, Cstring, Int32), i, image, inner_num)
                  end
+    t2 = time_ns()
+    elasped = (t2 - t1)/1.0e9
+    @printf "Elapsed time: %fn" elapsed
+
 end
 
 @printf "Usage main <outer_num> <inner_num>\n"
