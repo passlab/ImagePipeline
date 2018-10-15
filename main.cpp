@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "ImagePipelineDriver.h"
+#include <thread>
 #include <omp.h>
 
 int main(int argc,char* argv[]) {
@@ -30,27 +31,46 @@ int main(int argc,char* argv[]) {
 
     int outer_num = atoi(argv[1]);
     int inner_num = atoi(argv[2]);
-    int loops = 8;
+    int num_images;
     if (argc > 3) {
-        loops = atoi(argv[3]);
+        num_images = atoi(argv[3]);
     }
     double average_time;
     char * image = "test0.jpg";
     // parallel
+    int max_threads = std::thread::hardware_concurrency() - 2;
+    int left_over = num_images;
+    int loop = 0;
     double total_time = read_timer();
-#pragma omp parallel for num_threads(outer_num) firstprivate(image, loops)
-    for (int i = 0; i < loops; i++) {
-        processImage(i, image, inner_num);
+    if (max_threads < num_images) {
+        left_over = num_images % max_threads;
+        loop = num_images-left_over;
+#pragma omp parallel for num_threads(max_threads) firstprivate(image, loop)
+        for (int i = 0; i < loop; i++) {
+            processImage(i, image, 1);
+        }
+    }
+
+    int num_inner_threads = max_threads / left_over;
+    int temp = max_threads % left_over;
+#pragma omp parallel num_threads(left_over) firstprivate(num_inner_threads)
+    {
+       int thread_id = omp_get_thread_num();
+       if (thread_id < temp) num_inner_threads++;
+           processImage(thread_id+loop, image, num_inner_threads);
     }
     total_time = read_timer() - total_time;
 
-    for (int i = 0; i < loops; i++) {
+    for (int i = 0; i < loop; i++) {
         average_time += times[i];
     }
-    average_time /= loops;
+    average_time /= loop;
 
 
-    printf("The total time is: %.2f\nThe average time is %.2f\n", total_time, average_time);
+    printf("%d images are processed with 1 inner threads\n", loop);
+    printf("%d images are processed with %d or %d inner threads\n", num_inner_threads, num_inner_threads+1);
+    printf("Elapsed time: %.2fs\n", total_time);
+    printf("Average time: %.2fs\n", average_time);
 
 	return EXIT_SUCCESS;
 }

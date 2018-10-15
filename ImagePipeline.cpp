@@ -36,7 +36,7 @@ namespace IP
         cv::GaussianBlur(inputImage, outputImage, cv::Size(5, 5), 0, 0);
         return outputImage;
 	}
-	
+
 	std::vector<cv::Mat> splitChannels(const cv::Mat inputImage,const void* context)
 	{
 		std::vector<cv::Mat> outputImages;

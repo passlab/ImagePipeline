@@ -17,6 +17,7 @@
 #include <tr1/functional>
 #include <typeinfo>
 #include <opencv2/opencv.hpp>
+
 #include "tree.hh"
 
 namespace IP
