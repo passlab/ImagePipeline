@@ -28,6 +28,7 @@ Then on carina, the build of ImagePipeline has to use the build folder of opencv
 ```
 cmake -DOpenCV_DIR=/home/yanyh/opencv-2.4.13.6/build-openmp ..
 ```
+For OpenMP, since we are using OpenMP nested parallelism, `export OMP_NESTED=TRUE` need to set to enable inner parallelism. Otherwise, inner OpenCV parallelism will always run with 1 thread. 
 
 ImagePipeline 1.0
 ==============
