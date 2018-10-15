@@ -21,7 +21,9 @@ namespace IP
 	cv::Mat downscaleImage(const cv::Mat inputImage,const void* context) {
         cv::Mat outputImage;
         cv::resize(inputImage, outputImage, cv::Size(0, 0), 0.2, 0.2, CV_INTER_AREA);
+//        cv::resize(inputImage, outputImage, cv::Size(inputImage.cols * 0.75,inputImage.rows * 0.75), 0, 0, CV_INTER_LINEAR);
 		return outputImage;
+
 	}
 	
 	cv::Mat denoiseImage(const cv::Mat inputImage,const void* context) {

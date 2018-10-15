@@ -30,9 +30,6 @@ int main(int argc,char* argv[]) {
 
     int outer_num = atoi(argv[1]);
     int inner_num = atoi(argv[2]);
-    if (inner_num > 0 ) {
-        setCVNumThreads(inner_num);
-    }
     int loops = 8;
     if (argc > 3) {
         loops = atoi(argv[3]);

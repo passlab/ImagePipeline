@@ -24,12 +24,22 @@ using namespace cv;
 using namespace std;
 
 #define ANGLE(p1,p2,p3) (((p1.x-p3.x)*(p2.x-p3.x))+((p1.y-p3.y)*(p2.y-p3.y)))/sqrt(((pow(p1.x-p3.x,2.0)+pow(p1.y-p3.y,2.0))*(pow(p2.x-p3.x,2.0)+pow(p2.y-p3.y,2.0)))+1e-10)
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-double read_timer();
-double read_timer_ms();
+double read_timer_ms() {
+    struct timeval t;
+    gettimeofday(&t, 0);
+    return t.tv_sec * 1000ULL + t.tv_usec / 1000ULL;
+}
+
+double read_timer() {
+    return read_timer_ms() * 1.0e-3;
+}
+
 double times[1024];
-void findSquares(const cv::Mat, const void*);
-void processImage(int, char * image);
+void findSquares(const cv::Mat inputImage, const void* context);
 
 void processImage(int iteration_id, char * image, int num_threads) {
     //cv::setNumThreads(thread_num);
@@ -59,18 +69,10 @@ void processImage(int iteration_id, char * image, int num_threads) {
     printf("Iteration %d -- Thread %d -- Time: %.2f\n", iteration_id, omp_get_thread_num(), time);
     times[iteration_id] = time;
 }
-
-// ---------------------
-
-double read_timer_ms() {
-    struct timeval t;
-    gettimeofday(&t, 0);
-    return t.tv_sec * 1000ULL + t.tv_usec / 1000ULL;
+#ifdef __cplusplus
 }
+#endif
 
-double read_timer() {
-    return read_timer_ms() * 1.0e-3;
-}
 
 void findSquares(const cv::Mat inputImage, const void* context)
 {
