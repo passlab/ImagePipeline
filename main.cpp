@@ -79,7 +79,6 @@ int main(int argc,char* argv[]) {
     }
     total_time = read_timer() - total_time;
 
-    printf("....\n");
     for (int i = 0; i < num_images; i++) {
         average_time += times[i];
     }
@@ -88,7 +87,8 @@ int main(int argc,char* argv[]) {
     //printf("Elapsed time: %.2fs\n", total_time);
     //printf("Average time: %.2fs\n", average_time);
 
-    printf("%.2f", average_time);
+    //printf("%.2f", average_time);
+    printf("%.2f", total_time);
 
 	return EXIT_SUCCESS;
 }
