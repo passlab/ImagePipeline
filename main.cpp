@@ -35,6 +35,8 @@ int main(int argc,char* argv[]) {
     int num_images = 8;
     if (argc > 3) {
         num_images = atoi(argv[3]);
+    }
+    if (argc > 4) {
         auto_config = atoi(argv[4]);
     }
     double average_time;
@@ -55,6 +57,7 @@ int main(int argc,char* argv[]) {
             }
         }
 
+        if (left_over != 0) {
         int num_inner_threads = max_threads / left_over;
         int temp = max_threads % left_over;
 #pragma omp parallel num_threads(left_over) firstprivate(num_inner_threads)
@@ -63,25 +66,29 @@ int main(int argc,char* argv[]) {
             if (thread_id < temp) num_inner_threads++;
             processImage(thread_id + loop, image, num_inner_threads);
         }
-        printf("auto-config outer and inner parallelism\n");
-        printf("%d images are processed with 1 inner threads\n", loop);
-        printf("%d images are processed with %d or %d inner threads\n", left_over, num_inner_threads, num_inner_threads+1);
+        }
+        //printf("auto-config outer and inner parallelism\n");
+        //printf("%d images are processed with 1 inner threads\n", loop);
+        //printf("%d images are processed with %d or %d inner threads\n", left_over, num_inner_threads, num_inner_threads+1);
     } else {
 #pragma omp parallel for num_threads(outer_num)
         for (int i = 0; i < num_images; i++) {
             processImage(i, image, inner_num);
         }
-        printf("Manual set outer and inner parallelism: %d outer threads %d inner threads\n", outer_num, inner_num);
+        //printf("Manual set outer and inner parallelism: %d outer threads %d inner threads\n", outer_num, inner_num);
     }
     total_time = read_timer() - total_time;
 
+    printf("....\n");
     for (int i = 0; i < num_images; i++) {
         average_time += times[i];
     }
     average_time /= num_images;
 
-    printf("Elapsed time: %.2fs\n", total_time);
-    printf("Average time: %.2fs\n", average_time);
+    //printf("Elapsed time: %.2fs\n", total_time);
+    //printf("Average time: %.2fs\n", average_time);
+
+    printf("%.2f", average_time);
 
 	return EXIT_SUCCESS;
 }
