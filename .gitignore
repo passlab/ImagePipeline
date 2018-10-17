@@ -3,4 +3,5 @@
 *.trace
 *.o
 res_*.jpg
-main
+build-openmp/
+build-tbb/
