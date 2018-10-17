@@ -48,6 +48,7 @@ int main(int argc,char* argv[]) {
     double total_time = read_timer();
 
     if (auto_config) {
+        max_threads *= 2;
         if (max_threads < num_images) {
             left_over = num_images % max_threads;
             loop = num_images - left_over;
