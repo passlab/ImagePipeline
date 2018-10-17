@@ -47,9 +47,6 @@ fi
 
 END_TIME=$(date +%s.%N)
 
-echo $START_TIME
-echo $END_TIME
-
 ELAPSED_TIME=$(echo $END_TIME-$START_TIME | bc)
 
 echo "Elapsed time: " $ELAPSED_TIME

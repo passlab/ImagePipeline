@@ -9,7 +9,7 @@ function julia_loop(num_images::Int32, num_threads::Int32, index::Int32)
                 end
                 1
     else # Each image is processed in parallel
-         num_inner = fill(num_threads / num_images, num_images)
+         num_inner = fill(div(num_threads, num_images), num_images)
          temp = num_threads % num_images
          Threads.@threads for i = 1:num_images
                 if i < temp+1
