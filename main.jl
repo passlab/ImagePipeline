@@ -2,6 +2,35 @@ using Distributed
 using Printf
 # check https://www.juliabloggers.com/julia-calling-c-a-minimal-example/
 
+
+function julia_loop(num_images::Int32, num_threads::Int32)
+    image = "test0.jpg"
+    if num_threads < num_images # Each image is processed sequentially
+        Threads.@threads for i = 0:num_images-1
+                ccall((:processimage, "libimagepipeline"), cvoid, (int32, cstring, int32), i, image, 1)
+                end
+                1
+    elseif # Each image is processed in parallel
+         num_inner::Int32 = fill(num_threads / left_over, num_threads)
+         temp = num_threads % left_over
+         Threads.@threads for i = 0:num_images-1
+                if i < temp
+                    num_inner[i] = num_inner[i] + 1
+                end
+                ccall((:processImage, "libImagePipeline"), Cvoid, (Int32, Cstring, Int32), loop+i, image, num_inner[i])
+         end
+         num_inner[1]
+    end
+end
+
+function julia_loop_fix_inner_num(num_images::Int32, num_inner_threads::Int32)
+    image = "test0.jpg"
+    Threads.@threads for i = 0:num_images-1
+        ccall((:processimage, "libimagepipeline"), cvoid, (int32, cstring, int32), i, image, num_inner_threads)
+    end
+end
+
+
 function main(args::Array{String,1})
     outer_num::Int32 = 1
     inner_num::Int32 = 1
@@ -23,7 +52,6 @@ function main(args::Array{String,1})
 
     max_num_threads::Int32 = 108
     @printf "JULIA_NUM_THREADS: %d, outer_num: %d, inner_num: %d, num_images: %d, auto_config: %d\n" Threads.nthreads() outer_num inner_num num_images auto_config
-
     image = "test0.jpg"
     left_over::Int32 = num_images
     loop::Int32 = 0
@@ -31,33 +59,20 @@ function main(args::Array{String,1})
     @printf "================================================================\n"
     t1 = time_ns()
     if auto_config == 1
+        num_inner_threads = 1
         if max_num_threads < num_images
             left_over = num_images % max_num_threads
             loop = num_images - left_over
-            Threads.@threads for i = 0:loop-1
-#               @printf "Thread %d for %d\n" Threads.threadid() i
-                ccall((:processImage, "libImagePipeline"), Cvoid, (Int32, Cstring, Int32), i, image, 1)
-               end
+            julia_loop(loop, max_num_threads)
         end
         if left_over != 0
-            temp = max_num_threads % left_over
-            num_inner_threads = fill(max_num_threads / left_over, left_over)
-            #Threads.nthreads() = left_over # This is not working, Julia cannot change # threads to use after it starts
-            Threads.@threads for i = 1:left_over
-                if i <= temp
-                    num_inner_threads[i] = num_inner_threads[i] + 1
-                end
-                ccall((:processImage, "libImagePipeline"), Cvoid, (Int32, Cstring, Int32), loop+i-1, image, num_inner_threads[i])
-            end
+            num_inner_threads = julia_loop(left_over, max_num_threads)
         end
         @printf "Auto-config outer and inner parallelism:\n"
         @printf "\t%d images are processed with 1 inner threads\n" loop
-        @printf "\t%d images are processed with %d or %d inner threads\n" left_over num_inner_threads[1] num_inner_threads[1]+1
+        @printf "\t%d images are processed with %d or %d inner threads\n" left_over num_inner_threads num_inner_threads+1
     else
-        Threads.@threads for i = 0:num_images-1
-#           @printf "Thread %d for %d\n" Threads.threadid() i
-            ccall((:processImage, "libImagePipeline"), Cvoid, (Int32, Cstring, Int32), i, image, inner_num)
-        end
+        julia_loop_fix_inner_num(num_images, inner_num);
         @printf "Using outer and inner parallelism: %d outer threads %d inner threads\n" outer_num inner_num
     end
     t2 = time_ns()
