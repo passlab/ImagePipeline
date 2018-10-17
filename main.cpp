@@ -59,14 +59,14 @@ int main(int argc,char* argv[]) {
         }
 
         if (left_over != 0) {
-        int num_inner_threads = max_threads / left_over;
-        int temp = max_threads % left_over;
-#pragma omp parallel num_threads(left_over) firstprivate(num_inner_threads)
-        {
-            int thread_id = omp_get_thread_num();
-            if (thread_id < temp) num_inner_threads++;
-            processImage(thread_id + loop, image, num_inner_threads);
-        }
+            int num_inner_threads = max_threads / left_over;
+            int temp = max_threads % left_over;
+            #pragma omp parallel num_threads(left_over) firstprivate(num_inner_threads)
+            {
+                int thread_id = omp_get_thread_num();
+                if (thread_id < temp) num_inner_threads++;
+                processImage(thread_id + loop, image, num_inner_threads);
+            }
         }
         //printf("auto-config outer and inner parallelism\n");
         //printf("%d images are processed with 1 inner threads\n", loop);
