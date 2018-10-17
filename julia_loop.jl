@@ -21,13 +21,6 @@ function julia_loop(num_images::Int32, num_threads::Int32, index::Int32)
     end
 end
 
-function julia_loop_fix_inner_num(num_images::Int32, num_inner_threads::Int32)
-    image = "test0.jpg"
-    Threads.@threads for i = 0:num_images-1
-        ccall((:processImage, "libImagePipeline"), Cvoid, (Int32, Cstring, Int32), i, image, num_inner_threads)
-    end
-end
-
 function main(args::Array{String,1})
     num_images::Int32 = 8
     num_threads::Int32 = 108;
