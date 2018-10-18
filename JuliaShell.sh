@@ -49,4 +49,6 @@ END_TIME=$(date +%s.%N)
 
 ELAPSED_TIME=$(echo $END_TIME-$START_TIME | bc)
 
-echo "Elapsed time: " $ELAPSED_TIME
+#echo "Elapsed time: " $ELAPSED_TIME
+
+printf "%.2f" $ELAPSED_TIME
