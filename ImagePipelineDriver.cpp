@@ -67,7 +67,7 @@ void processImage(int iteration_id, char * image, int num_threads) {
     //filename = "res_" + filename;
     //imwrite(filename, inputImage);
     //printf("Iteration %d -- Thread %d -- Time: %.2f\n", iteration_id, omp_get_thread_num(), time);
-    times[iteration_id] = time;
+    //times[iteration_id] = time;
 }
 #ifdef __cplusplus
 }

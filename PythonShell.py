@@ -1,6 +1,17 @@
 import ctypes
 import sys
 from multiprocessing import Pool
+import time
+
+def caller(argv):
+    threadID = argv[0]
+    threadNum = argv[1]
+    LP_c_char = ctypes.POINTER(ctypes.c_char)
+    imagePipeline.processImage.argtypes = (ctypes.c_int, LP_c_char, ctypes.c_int)
+    imageName = ctypes.create_string_buffer("test0.jpg".encode('utf-8'))
+
+    imagePipeline.processImage(threadID, imageName, threadNum)
+
 
 if __name__ == '__main__':
 
@@ -18,19 +29,10 @@ if __name__ == '__main__':
     if argc > 4:
         autoConfig = int(sys.argv[4])
 
-    imagePipeline = ctypes.cdll.LoadLibrary('./ImagePipeline.so')
+    imagePipeline = ctypes.cdll.LoadLibrary('./libImagePipeline.so')
     maxThreads = 108
     leftOver = imageAmount
     loop = 0
-
-    LP_c_char = ctypes.POINTER(ctypes.c_char)
-    LP_LP_c_char = ctypes.POINTER(LP_c_char)
-    imageName = "test0.jpg"
-    unitArgv = (LP_c_char * (4))()
-    unitArgv[0] = ctypes.create_string_buffer("")
-    unitArgv[2] = ctypes.create_string_buffer(imageName)
-    unitArgv[3] = ctypes.create_string_buffer(1)
-    pipeline.main.argtypes = (ctypes.c_int, LP_LP_c_char)
 
     startTime = time.time()
     if autoConfig:
@@ -38,54 +40,22 @@ if __name__ == '__main__':
             leftOver = imageAmount % maxThreads
             loop = imageAmount - leftOver
             outerWorkers = Pool(maxThreads)
-           # rawArgv = [loop, maxThreads, 0]
-            cppArgv = [unitArgv for i in range(maxThreads)]
-            for i in range(maxThreads):
-                #enc_arg = str(raw_argv[i-1]).encode('utf-8')
-                cppArgv[i][1] = ctypes.create_string_buffer(str(i))
-
-            #cppArgv = [[ctypes.create_string_buffer(""), ctypes.create_string_buffer(i), ctypes.create_string_buffer(imageName), ctypes.create_string_buffer(1)] for i in range(maxThreads)]
-
-                    #enc_arg = str(raw_argv[i-1]).encode('utf-8')
-            outerWorkers.map(imagePipeline, cppArgv)
+            argv = [[i, 1] for i in range(loop)]
+            outerWorkers.map(caller, argv)
 
         if leftOver != 0:
             outerWorkers = Pool(leftOver)
-            #rawArgv = [leftOver, maxThreads, loop]
             threadLimitDiff = maxThreads%leftOver
-            unitArgv[3] = ctypes.create_string_buffer(str(maxThreads//leftOver))
-            cppArgv = [unitArgv for i in range(leftOver)]
-            for i in range(leftOver):
-                #enc_arg = str(raw_argv[i-1]).encode('utf-8')
-                #cppArgv[1] = ctypes.create_string_buffer(enc_arg)
-                cppArgv[i][1] = ctypes.create_string_buffer(str(loop+i))
-                if i < threadLimitDiff:
-                    cppArgv[3] = ctypes.create_string_buffer(str(maxThreads//leftOver+1))
-            outerWorkers.map(imagePipeline, cppArgv)
+            argv = [[loop+i, maxThreads//leftOver] for i in range(leftOver)]
+            for i in range(threadLimitDiff):
+                argv[i][1] += 1
+            outerWorkers.map(caller, argv)
     else:
         outerWorkers = Pool(outerNumber)
-        unitArgv[3] = ctypes.create_string_buffer(str(innerNumber))
-        #rawArgv = [leftOver, maxThreads, loop]
-        cppArgv = [unitArgv for i in range(outerNumber)]
-        for i in range(outerNumber):
-            cppArgv[i][1] = ctypes.create_string_buffer(str(i))
-        outerWorkers.map(imagePipeline, cppArgv)
+        argv = [[i, innerNumber] for i in range(outerNumber)]
+        outerWorkers.map(caller, argv)
 
     elapsedTime = time.time() - startTime
 
-    print(elapsedTime)
+    print('{:.2f}'.format(elapsedTime), end='')
 
-# calculate outer and inner number
-# outer_number = pool_number
-# inner_number = opencv_numer
-    '''
-    raw_argv = ["main", "2", "8", "4"]
-
-    for i in  range(argc):
-        enc_arg = raw_argv[i].encode('utf-8')
-        argv[i] = ctypes.create_string_buffer(enc_arg)
-
-    pipeline.main(argc, argv)
-    #pipeline.test(1, 8)
-    '''
-    
