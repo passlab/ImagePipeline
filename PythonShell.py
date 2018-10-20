@@ -52,7 +52,7 @@ if __name__ == '__main__':
             outerWorkers.map(caller, argv)
     else:
         outerWorkers = Pool(outerNumber)
-        argv = [[i, innerNumber] for i in range(outerNumber)]
+        argv = [[i, innerNumber] for i in range(imageAmount)]
         outerWorkers.map(caller, argv)
 
     elapsedTime = time.time() - startTime
